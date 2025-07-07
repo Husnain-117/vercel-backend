@@ -122,7 +122,7 @@ app.use('/uploads', express.static('uploads'));
 
 // Test route
 app.get("/", (req, res) => {
-  res.send("FASTConnect backend running...");
+  res.send("FASTConnect backend  is running...");
 });
 
 // Export the Express app for use in https-server.js
