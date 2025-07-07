@@ -39,7 +39,8 @@ if (isProduction) {
     cors: {
       origin: [
         "https://localhost:5173",
-        "https://192.168.1.15:5173"
+        "https://192.168.1.15:5173",
+        "https://fast-connect-three.vercel.app",
       ],
       methods: ["GET", "POST"],
       credentials: true
