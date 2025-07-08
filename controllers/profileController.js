@@ -318,9 +318,11 @@ exports.uploadProfilePhoto = async (req, res) => {
     }
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
+    // Add cache-busting query param to the photo URL
+    const photoUrl = `/uploads/${req.file.filename}?v=${Date.now()}`;
     const user = await User.findByIdAndUpdate(
       userId,
-      { profilePhoto: `/uploads/${req.file.filename}` },
+      { profilePhoto: photoUrl },
       { new: true }
     ).select('-password -otp -otpExpiresAt');
 
