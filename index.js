@@ -51,8 +51,8 @@ app.use((req, res, next) => {
 // Define allowedOrigins at the top-level scope for reuse
 const allowedOrigins = [
   /^https?:\/\/localhost(:\d+)?$/,  // All localhost ports
-  /^https?:\/\/192\.168\.1\.(\d+)(:\d+)?$/  // All 192.168.1.x addresses
-  // Add production domains here
+  /^https?:\/\/192\.168\.1\.(\d+)(:\d+)?$/,  // All 192.168.1.x addresses
+  /^https?:\/\/fast-connect-three\.vercel\.app$/  // Production frontend domain
 ];
 
 // Define unified CORS configuration
