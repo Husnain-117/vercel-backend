@@ -10,6 +10,7 @@ router.get('/test', (req, res) => {
 });
 
 router.post('/send', authenticate, textController.sendMessage);
+router.post('/send-to-user', authenticate, textController.sendMessageToUser);
 
 router.get('/all', textController.getMessages);
 
