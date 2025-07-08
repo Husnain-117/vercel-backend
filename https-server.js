@@ -12,30 +12,8 @@ let io;
 let server;
 
 if (isProduction) {
-  // In production (Railway), use HTTP (Railway provides HTTPS at the proxy)
-  server = require('http').createServer(app);
-
-  io = require('socket.io')(server, {
-    cors: {
-      origin: [
-        "https://fast-connect-three.vercel.app",
-      ],
-      methods: ["GET", "POST"],
-      credentials: true
-    }
-  });
-
-  require('./socket')(io);
-  app.set('io', io);
-
-  server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Production server running on port ${PORT}`);
-  });
-
-  process.on('unhandledRejection', (err) => {
-    console.error('Unhandled Rejection:', err);
-    server.close(() => process.exit(1));
-  });
+  // On Vercel/production, export the app for serverless use
+  module.exports = app;
 } else {
   // Local development: Use HTTPS server with mkcert certificates
   const certsDir = path.resolve(__dirname, '../.cert');
