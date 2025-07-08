@@ -1,20 +1,17 @@
 const https = require('https');
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-
-require('dotenv').config();
 const app = require('./index');
 
 const isProduction = process.env.NODE_ENV === 'production';
 const PORT = process.env.PORT || 5000;
 
-let io;
-let server;
+let server, io;
 
 if (isProduction) {
-  // In production (Railway), use HTTP (Railway provides HTTPS at the proxy)
-  const http = require('http');
+  // Railway/Production: use HTTP (Railway provides HTTPS at the proxy)
   server = http.createServer(app);
 
   io = require('socket.io')(server, {
@@ -89,9 +86,6 @@ if (isProduction) {
   require('./socket')(io);
   app.set('io', io);
 
-  // Get port from environment or use 5000
-  const PORT = process.env.PORT || 5000;
-
   // Get the actual local IP address for LAN access
   function getLocalIp() {
     const interfaces = os.networkInterfaces();
@@ -106,14 +100,12 @@ if (isProduction) {
   }
   const localIp = getLocalIp();
 
-  // Start the server
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode`);
     console.log(`HTTPS Server: https://localhost:${PORT}`);
     console.log(`HTTPS Server (LAN): https://${localIp}:${PORT}`);
   });
 
-  // Handle unhandled promise rejections
   process.on('unhandledRejection', (err) => {
     console.error('Unhandled Rejection:', err);
     server.close(() => process.exit(1));
