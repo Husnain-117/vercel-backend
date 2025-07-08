@@ -1,10 +1,10 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "https-server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
+    "start": "node  https-server.js",
     "dev": "nodemon index.js",
     "dev:https": "nodemon server-https.js",
     "start:https": "node server-https.js"
