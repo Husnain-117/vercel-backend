@@ -7,6 +7,7 @@ require('dotenv').config();
 const app = require('./index');
 
 const isProduction = process.env.NODE_ENV === 'production';
+const PORT = process.env.PORT || 5000;
 
 let io;
 let server;
