@@ -9,6 +9,12 @@ router.get('/test', (req, res) => {
 
 router.post('/send', authenticate, textController.sendMessage);
 
+// Send message to specific user
+router.post('/send-to-user', authenticate, textController.sendMessageToUser);
+
+// Get messages between two users
+router.get('/between/:userId1/:userId2', authenticate, textController.getMessagesBetweenUsers);
+
 router.get('/all', textController.getMessages);
 
 // Delete all chats
