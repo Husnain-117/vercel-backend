@@ -1,7 +1,7 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
 
-// Send a new message
+// Send a new message (Global chat - no receiver)
 exports.sendMessage = async (req, res) => {
   try {
     const { text } = req.body;
@@ -11,7 +11,7 @@ exports.sendMessage = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Missing message or sender' });
     }
 
-    // Create and save the new message
+    // Create and save the new message (global chat - no receiver needed)
     const newMessage = new Message({
       text,
       sender: senderId,
@@ -55,6 +55,9 @@ exports.sendMessage = async (req, res) => {
 // Send a message to a specific user
 exports.sendMessageToUser = async (req, res) => {
   try {
+    console.log('sendMessageToUser called with body:', req.body);
+    console.log('User from request:', req.user);
+    
     const { text, receiverId } = req.body;
     const senderId = req.user._id;
 
@@ -128,10 +131,10 @@ exports.deleteAllMessages = async (req, res) => {
   }
 };
 
-// Get all messages
+// Get all messages (Global chat only - messages without receiver)
 exports.getMessages = async (req, res) => {
   try {
-    const messages = await Message.find({})
+    const messages = await Message.find({ receiver: { $exists: false } }) // Only global chat messages
       .populate('sender', 'name email avatar')
       .sort({ timestamp: 1 }) // oldest first
       .lean();
