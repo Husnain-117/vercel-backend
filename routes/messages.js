@@ -17,6 +17,12 @@ router.get('/between/:userId1/:userId2', authenticate, textController.getMessage
 
 router.get('/all', textController.getMessages);
 
+// Get all users who have direct messaged the current user (inbox)
+router.get('/inbox', authenticate, textController.getInbox);
+
+// Get conversation history between current user and a specific user
+router.get('/conversation/:userId', authenticate, textController.getConversation);
+
 // Delete all chats
 router.delete('/all', authenticate, textController.deleteAllMessages);
 

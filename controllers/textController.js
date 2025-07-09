@@ -196,3 +196,121 @@ exports.getMessagesBetweenUsers = async (req, res) => {
     });
   }
 };
+
+// Get all users who have direct messaged the current user (sent or received) with all messages
+exports.getInbox = async (req, res) => {
+  try {
+    const currentUserId = req.user._id;
+
+    // Find all unique user IDs who have sent or received messages with the current user
+    const conversations = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { sender: currentUserId },
+            { receiver: currentUserId }
+          ],
+          receiver: { $exists: true, $ne: null } // Only direct messages
+        }
+      },
+      {
+        $project: {
+          otherUser: {
+            $cond: [
+              { $eq: ["$sender", currentUserId] },
+              "$receiver",
+              "$sender"
+            ]
+          },
+          _id: 1
+        }
+      },
+      {
+        $group: {
+          _id: "$otherUser"
+        }
+      }
+    ]);
+
+    const userIds = conversations.map(c => c._id);
+    const users = await User.find({ _id: { $in: userIds } }, "_id name email avatar");
+
+    // Get all messages for each conversation
+    const inboxData = await Promise.all(
+      conversations.map(async (conv) => {
+        const user = users.find(u => u._id.toString() === conv._id.toString());
+        
+        // Get all messages between current user and this user
+        const messages = await Message.find({
+          $or: [
+            { sender: currentUserId, receiver: conv._id },
+            { sender: conv._id, receiver: currentUserId }
+          ],
+          receiver: { $exists: true, $ne: null }
+        })
+          .populate('sender', 'name email avatar')
+          .populate('receiver', 'name email avatar')
+          .sort({ timestamp: 1 }) // oldest first
+          .lean();
+
+        return {
+          user: user || { _id: conv._id, name: "Unknown User", email: "", avatar: "" },
+          messages: messages
+        };
+      })
+    );
+
+    res.json({ success: true, conversations: inboxData });
+  } catch (err) {
+    console.error('Error fetching inbox:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch inbox',
+      error: err.message
+    });
+  }
+};
+
+// Get all messages between current user and a specific user (conversation history)
+exports.getConversation = async (req, res) => {
+  try {
+    const currentUserId = req.user._id;
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required'
+      });
+    }
+
+    // Get all messages between the two users
+    const messages = await Message.find({
+      $or: [
+        { sender: currentUserId, receiver: userId },
+        { sender: userId, receiver: currentUserId }
+      ],
+      receiver: { $exists: true, $ne: null } // Only direct messages
+    })
+      .populate('sender', 'name email avatar')
+      .populate('receiver', 'name email avatar')
+      .sort({ timestamp: 1 }) // oldest first
+      .lean();
+
+    // Get the other user's profile info
+    const otherUser = await User.findById(userId, 'name email avatar');
+
+    res.json({
+      success: true,
+      messages,
+      otherUser: otherUser || { _id: userId, name: "Unknown User", email: "", avatar: "" }
+    });
+  } catch (err) {
+    console.error('Error fetching conversation:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch conversation',
+      error: err.message
+    });
+  }
+};
