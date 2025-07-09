@@ -131,6 +131,26 @@ exports.deleteAllMessages = async (req, res) => {
   }
 };
 
+// Delete a message by ID (only if sender)
+exports.deleteMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.user._id || req.user.id;
+
+    const message = await Message.findById(messageId);
+    if (!message) return res.status(404).json({ success: false, message: "Message not found" });
+
+    if (String(message.sender) !== String(userId)) {
+      return res.status(403).json({ success: false, message: "Not authorized to delete this message" });
+    }
+
+    await Message.findByIdAndDelete(messageId);
+    res.json({ success: true, message: "Message deleted" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Failed to delete message", error: err.message });
+  }
+};
+
 // Get all messages (Global chat only - messages without receiver)
 exports.getMessages = async (req, res) => {
   try {

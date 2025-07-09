@@ -26,4 +26,6 @@ router.get('/conversation/:userId', authenticate, textController.getConversation
 // Delete all chats
 router.delete('/all', authenticate, textController.deleteAllMessages);
 
+router.delete('/delete/:messageId', authenticate, textController.deleteMessage);
+
 module.exports = router; 
