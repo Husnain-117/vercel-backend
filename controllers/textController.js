@@ -52,59 +52,6 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
-// Send a message to a specific user by their user ID
-exports.sendMessageToUser = async (req, res) => {
-  try {
-    const { text, recipientId } = req.body;
-    const senderId = req.user._id;
-
-    if (!text || !senderId || !recipientId) {
-      return res.status(400).json({ success: false, message: 'Missing message, sender, or recipient' });
-    }
-
-    // Create and save the new direct message
-    const newMessage = new Message({
-      text,
-      sender: senderId,
-      recipient: recipientId,
-      timestamp: new Date()
-    });
-
-    await newMessage.save();
-
-    // Populate user data
-    const populatedMessage = await Message.findById(newMessage._id)
-      .populate('sender', 'name email avatar')
-      .populate('recipient', 'name email avatar')
-      .lean();
-
-    // Log the message for debugging
-    console.log('New direct message created:', populatedMessage);
-
-    // Emit to recipient and sender only if using rooms (optional)
-    if (req.io) {
-      // Example: emit to both users' rooms (if you use socket.io rooms)
-      req.io.to(senderId.toString()).emit('new_direct_message', populatedMessage);
-      req.io.to(recipientId.toString()).emit('new_direct_message', populatedMessage);
-    } else {
-      console.warn('Socket.io instance not available - direct message will not be broadcast in real-time');
-    }
-
-    // Send success response with the populated message
-    res.json({ 
-      success: true, 
-      message: populatedMessage 
-    });
-  } catch (err) {
-    console.error('Error sending direct message:', err);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to send direct message',
-      error: err.message 
-    });
-  }
-};
-
 // Delete all messages
 exports.deleteAllMessages = async (req, res) => {
   try {
